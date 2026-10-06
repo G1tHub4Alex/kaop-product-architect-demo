@@ -70,4 +70,4 @@ spec:
           imagePullPolicy: Never
           env:
             - name: API_URL
-              value: http://demo-api:8081/work
+              value: http://demo-api:8080/work
