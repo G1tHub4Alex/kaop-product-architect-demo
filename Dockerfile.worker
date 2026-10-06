@@ -1,0 +1,5 @@
+FROM python:3.12-alpine
+WORKDIR /app
+COPY worker.py .
+USER 10001
+CMD ["python", "worker.py"]
