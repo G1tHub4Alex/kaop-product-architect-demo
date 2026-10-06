@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kaop-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api
+  namespace: kaop-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api
+  template:
+    metadata:
+      labels:
+        app: demo-api
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: api
+          image: kaop-demo-api:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api
+  namespace: kaop-demo
+spec:
+  selector:
+    app: demo-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-worker
+  namespace: kaop-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-worker
+  template:
+    metadata:
+      labels:
+        app: demo-worker
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: worker
+          image: kaop-demo-worker:local
+          imagePullPolicy: Never
+          env:
+            - name: API_URL
+              value: http://demo-api:8081/work
